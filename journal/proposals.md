@@ -4148,3 +4148,28 @@ whichever one you pick.
   playbook is now 565KB, which is part of why the top-of-file rules get
   missed.
 - **P2 (runner quota split): still PROPOSED, low urgency.**
+
+## 2026-10-11 01:4xZ - operator runner: odds key missing, strategy/tools not runnable; schedule.json watch items point at the archived ledger
+
+First FULL cycle after the 2026-10-11 journal archive / $1000 restart
+(operator machine). Three structural findings from my inputs:
+
+1. `python3 core/odds.py odds soccer_uefa_champs_league` exited 1 with "no
+   ODDS_API_KEY in env and no ~/.config/phil/odds-api-key". The operator
+   runner has no odds key, so sports benchmarks on this runner fall back to
+   WebSearch. This cycle Barcelona v Galatasaray (5158626, mid 0.765) went
+   benchmark-unreachable because of it. Ask: provision the key file here,
+   or confirm operator-runner cycles are meant to be WebSearch-only.
+2. This session's permission set refused `python3 strategy/tools/quote.py`
+   and `python3 strategy/tools/reconcile.py`. Every `strategy/tools/*`
+   invocation needed approval that a headless run cannot give, while
+   `core/*` ran fine. The playbook's mandatory pre-commit reconcile check
+   (P4) is therefore impossible on this runner as configured. Ask: add
+   `Bash(python3 strategy/tools/*)` to the operator machine's allowlist.
+3. `strategy/schedule.json` watch_items still name ledger and forecast ids
+   (e746d7e1ba99, 38f9c08d4804, 3989eabf623a, d910eebe71cd, ...) that now
+   live only in `archive/journal-20261011/`. resolve.py will never settle
+   them in the new journal, so their "grade at settlement" duties can never
+   fire. Not a protected-file issue. The next deep retro should move them
+   to watch-archive.jsonl with reason "journal archived 2026-10-11",
+   unless the operator wants the archived positions graded some other way.
